@@ -1,0 +1,88 @@
+<div class="container">
+  <header>
+    <h1>Task Tracker</h1>
+    <div class="counter">
+      <span class="pending">{{ pendingCount }} pending</span>
+      <span class="separator">|</span>
+      <span class="done">{{ doneCount }} done</span>
+    </div>
+  </header>
+
+  <section class="add-task-form">
+    <h2>Add a New Task</h2>
+
+    <div class="form-row">
+      <label for="title">Title *</label>
+      <input id="title" type="text" [(ngModel)]="newTitle" placeholder="Eg. Finish report" />
+    </div>
+
+    <div class="form-row">
+      <label for="description">Description</label>
+      <textarea id="description" [(ngModel)]="newDescription" placeholder="Tasks details"></textarea>
+    </div>
+
+    <div class="form-row inline">
+      <div>
+        <label for="dueDate">Due Date</label>
+        <input id="dueDate" type="date" [(ngModel)]="newDueDate" />
+      </div>
+
+      <div>
+        <label for="priority">Priority</label>
+        <select id="priority" [(ngModel)]="newPriority">
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn-add" (click)="addTask()">Add Task</button>
+  </section>
+
+  <section class="filters">
+    <div>
+      <label for="statusFilter">Status</label>
+      <select id="statusFilter" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+        <option value="All">All</option>
+        <option value="Pending">Pending</option>
+        <option value="Done">Done</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="priorityFilter">Priority</label>
+      <select id="priorityFilter" [(ngModel)]="priorityFilter" (change)="onFilterChange()">
+        <option value="All">All</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="task-list">
+    <h2>Tasks</h2>
+
+    <p *ngIf="tasks.length === 0" class="empty-message">No tasks found. Add one above, or adjust your filters.</p>
+
+    <div *ngFor="let task of tasks" class="task-card" [class.done-card]="task.is_done">
+      <div class="task-main">
+        <h3 [class.strikethrough]="task.is_done">{{ task.title }}</h3>
+        <p *ngIf="task.description" class="task-description">{{ task.description }}</p>
+        <div class="task-meta">
+          <span class="badge priority-{{ task.priority.toLowerCase() }}">{{ task.priority }}</span>
+          <span *ngIf="task.due_date" class="due-date">Due: {{ task.due_date | date:'mediumDate' }}</span>
+          <span *ngIf="!task.due_date" class="due-date no-date">No due date</span>
+        </div>
+      </div>
+
+      <div class="task-actions">
+        <button class="btn-toggle" [class.is-done]="task.is_done" (click)="toggleDone(task)">
+          {{ task.is_done ? 'Done ✓' : 'Mark Done' }}
+        </button>
+        <button class="btn-delete" (click)="deleteTask(task)">Delete</button>
+      </div>
+    </div>
+  </section>
+</div>
