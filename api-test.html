@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; }
+    button { display: block; margin: 10px 0; padding: 10px; width: 100%; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 15px; border-radius: 5px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>Task Tracker API Test Page</h2>
+  <button onclick="testGetAll()">1. GET all tasks</button>
+  <button onclick="testCreate()">2. POST create a task</button>
+  <button onclick="testUpdate()">3. PUT update/toggle last created task</button>
+  <button onclick="testDelete()">4. DELETE last created task</button>
+  <button onclick="testGetOne()">5. GET single task by id</button>
+  <h3>Result:</h3>
+  <pre id="output">Click a button above...</pre>
+  <script>
+    const BASE = 'http://localhost:3000/api/tasks';
+    let lastId = null;
+    const out = document.getElementById('output');
+    async function show(promise) {
+      try {
+        const res = await promise;
+        const status = res.status;
+        let body = '';
+        if (status !== 204) body = await res.json();
+        out.textContent = `Status: ${status}\n\n` + JSON.stringify(body, null, 2);
+        return body;
+      } catch (err) { out.textContent = 'Error: ' + err.message; }
+    }
+    async function testGetAll() { await show(fetch(BASE)); }
+    async function testCreate() {
+      const body = await show(fetch(BASE, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Test task from browser', description: 'Created via test page', due_date: '2026-06-22', priority: 'Medium' })
+      }));
+      if (body && body.id) { lastId = body.id; out.textContent += `\n\n(Saved lastId = ${lastId})`; }
+    }
+    async function testUpdate() {
+      if (!lastId) { out.textContent = 'Run step 2 first.'; return; }
+      await show(fetch(`${BASE}/${lastId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Updated task', description: 'Created via test page', due_date: '2026-06-22', priority: 'Medium', is_done: true })
+      }));
+    }
+    async function testDelete() {
+      if (!lastId) { out.textContent = 'Run step 2 first.'; return; }
+      await show(fetch(`${BASE}/${lastId}`, { method: 'DELETE' }));
+      out.textContent += `\n\n(Deleted task ${lastId})`;
+    }
+    async function testGetOne() {
+      if (!lastId) { out.textContent = 'Run step 2 first.'; return; }
+      await show(fetch(`${BASE}/${lastId}`));
+    }
+  </script>
+</body>
+</html>
